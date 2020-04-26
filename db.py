@@ -146,7 +146,7 @@ def update_table():
 ##cursor.execute(upd_sql)
 
 # Удаление из БД
-def delete_table():
+def delete_from_table():
     """
     Удаляет заданную строку из БД.
     """
