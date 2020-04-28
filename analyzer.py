@@ -1,3 +1,18 @@
+"""
+@author: Алексеевский Р.А., ИУ7-84Б
+
+Файл работы с определением содержимого снимка.
+
+Техническое задание:
+Разработать десктоп-приложение для подбора снимков по тегам.
+Предусмотреть перечень тегов, которые могут быть установлены
+пользователем вручную. Пользователь может:
+загрузить снимки в систему;
+указать теги из числа предложенных вручную;
+установить автоопределение тегов на основе анализа снимка;
+производить поиск по тегу из перечня фильтров.
+"""
+
 import os
 import uuid
 from imageai.Detection import ObjectDetection
@@ -5,6 +20,14 @@ from pathlib import Path
 
 #обработка фотки
 def photos(title):
+    """
+    Обрабатывает фотографию, определяет её содержимое.
+
+    :param title: путь к файлу
+    :type title: path
+    :rtype: json
+    """
+    
     list = detector.detectObjectsFromImage(
             input_image=os.path.join(exec_path, title),
             output_image_path=os.path.join(exec_path, "./test/new_objects.jpg"),
@@ -20,6 +43,16 @@ def photos(title):
 
 #поиск фоток
 def enumerate_files(dir_path: Path, ext: str):
+    """
+    Производит поиск фотографий внутри директории для дальнейшей обработки.
+
+    :param dir_path: путь до директории, в которой хранятся снимки
+    :param ext: расширение файлов
+    :type dir_path: path
+    :type ext: str
+    :rtype: json
+    """
+    
     # формируем маску для поиска
     path_mask = '*.%s' % ext
     # исключаем директории
