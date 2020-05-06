@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox, QSplitter, QListView, QScrollArea, QVBoxLayout, QCheckBox, QPushButton
+from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox, QSplitter, QListView, QScrollArea, QVBoxLayout, QCheckBox, QPushButton, QLabel
 from photowidget import PhotoWidget
 from flowlayout import FlowLayout
 
@@ -85,7 +85,9 @@ class MainWindow(QSplitter):
     
     def addImages(self, images):
         for img_path in images:
-            self.flow_layout.addWidget(PhotoWidget(self, img_path))
+            img = PhotoWidget(self, img_path)
+            img.change_tags.connect(self.updateTags)
+            self.flow_layout.addWidget(img)
 
     def selectAllTags(self):
         for checkbox in self.tags_checkboxes:
@@ -122,10 +124,79 @@ class MainWindow(QSplitter):
         tags = self.getTags()
         # TODO: получение изображений из БД
         #images = 
-        images = ["chi.png", "Screenshot.png", "chi.png", "Screenshot.png", "chi.png", "Screenshot.png"]
+        images = []
         
         self.clearImages()
         self.addImages(images)
+    
+    def updateTags(self, name):
+        print(name)
+        picker = TagsPicker(self, name)
+        picker.show()
+
+class TagsPicker(QWidget):
+    def __init__(self, parent, filename):
+        super().__init__(parent)
+        self.setWindowTitle(filename)
+        
+        self.tags_container = QScrollArea()
+        self.tags = QWidget()
+        self.tags_layout = QVBoxLayout()
+        self.tags.setLayout(self.tags_layout)
+        self.tags_container.setWidgetResizable(True)
+        self.tags_container.setWidget(self.tags)
+        self.tags_side_layout = QVBoxLayout()
+        self.select_all = QPushButton("Select all", self)
+        self.select_all.clicked.connect(self.selectAllTags)
+        self.deselect_all = QPushButton("Deselect all", self)
+        self.deselect_all.clicked.connect(self.deselectAllTags)
+        self.save = QPushButton("Save tags", self)
+        self.save.clicked.connect(self.saveTags)
+        self.cancel = QPushButton("Cancel", self)
+        self.cancel.clicked.connect(self.closePanel)
+        self.tags_side_layout.addWidget(QLabel(filename))
+        self.tags_side_layout.addWidget(self.select_all)
+        self.tags_side_layout.addWidget(self.deselect_all)
+        self.tags_side_layout.addWidget(self.tags_container)
+        self.tags_side_layout.addWidget(self.save)
+        self.tags_side_layout.addWidget(self.cancel)
+        self.setLayout(self.tags_side_layout)
+
+        # TODO: получить теги файла из БД
+        tags_list = []
+
+        self.tags_checkboxes = [QCheckBox(tag, self.tags) for tag in tag_classes]
+        
+        for tag_checkbox, tag in zip(self.tags_checkboxes, tag_classes):
+            tag_checkbox.setChecked(tag in tags_list)
+            self.tags_layout.addWidget(tag_checkbox)
+    
+    def selectAllTags(self):
+        for checkbox in self.tags_checkboxes:
+            checkbox.setChecked(True)
+    
+    def deselectAllTags(self):
+        for checkbox in self.tags_checkboxes:
+            checkbox.setChecked(False)
+    
+    def saveTags(self):
+        tags = []
+        
+        for checkbox, tag in zip(self.tags_checkboxes, tag_classes):
+            if checkbox.isChecked():
+                tags.append(tag)
+        
+        if len(tags) == 0:
+            QMessageBox.warning(self, "No tags assigned",
+                "No tags assigned at all!\nChanges will not saved")
+        else:
+            # TODO: сохранить новые теги
+            pass
+    
+        self.closePanel()
+    
+    def closePanel(self):
+        self.deleteLater()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

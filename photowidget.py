@@ -1,6 +1,7 @@
-from PyQt5.QtWidgets import QFrame, QLabel
+from PyQt5.QtWidgets import QApplication, QFrame, QLabel, QMenu
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QEvent, pyqtSignal
+import subprocess, os, platform
 import os.path
 
 class PhotoWidget(QFrame):
@@ -20,3 +21,35 @@ class PhotoWidget(QFrame):
         self.text_label = QLabel(os.path.split(filename)[-1], parent=self)
         self.text_label.setAlignment(Qt.AlignCenter)
         self.text_label.setGeometry(4, 132, 152, 28)
+        
+    change_tags = pyqtSignal(str)
+
+    def mousePressEvent(self, QMouseEvent):
+        if QMouseEvent.button() == Qt.LeftButton:
+            self.openImage()
+        elif QMouseEvent.button() == Qt.RightButton:
+            self.list_menu = QMenu()
+            menu_item = self.list_menu.addAction("Open image")
+            menu_item.triggered.connect(self.openImage)
+            menu_item = self.list_menu.addAction("Copy path")
+            menu_item.triggered.connect(self.copyPath)
+            menu_item = self.list_menu.addAction("Edit tags")
+            menu_item.triggered.connect(self.editTags)
+            self.list_menu.move(self.mapToGlobal(QMouseEvent.pos()))
+            self.list_menu.show()
+
+    def openImage(self):
+        if platform.system() == 'Darwin': # macOS
+            subprocess.call(('open', self.filename))
+        elif platform.system() == 'Windows': # Windows
+            os.startfile(self.filename)
+        else:  # linux variants
+            subprocess.call(('xdg-open', self.filename))
+
+    def copyPath(self):
+        clipboard = QApplication.clipboard()
+        clipboard.setText(self.filename)
+        QApplication.sendEvent(clipboard, QEvent(QEvent.Clipboard))
+    
+    def editTags(self):
+        self.change_tags.emit(self.filename)
