@@ -8,7 +8,7 @@ class PhotoWidget(QFrame):
         super().__init__(parent)
         
         self.filename = filename
-        self.setFrameStyle(QFrame.Panel)
+        #self.setFrameStyle(QFrame.Panel)
         self.setFixedSize(160, 160)
 
         self.preview_label = QLabel("", parent=self)

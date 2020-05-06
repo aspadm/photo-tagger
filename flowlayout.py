@@ -97,7 +97,7 @@ class FlowLayout(QtWidgets.QLayout):
 
         return y + lineHeight - rect.y()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
 
     class Window(QtWidgets.QWidget):
