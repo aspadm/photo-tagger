@@ -1,6 +1,7 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox
+from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox, QSplitter, QListView, QScrollArea
 from photowidget import PhotoWidget
+from flowlayout import FlowLayout
 
 """ TODO:
 mainwindow
@@ -11,7 +12,7 @@ mainwindow
             photowidget (2 labels)
 """
 
-class MainWindow(QWidget):
+class MainWindow(QSplitter):
     def __init__(self):
         super().__init__()
         
@@ -20,7 +21,16 @@ class MainWindow(QWidget):
     def initUI(self):
         self.setWindowTitle("Photo tagger")
         
-        self.test = PhotoWidget(self, "./chi.png")
+        self.listview = QListView(self)
+        self.addWidget(self.listview)
+        
+        self.photos = QScrollArea()
+        flow_layout = FlowLayout()
+        flow_layout.addWidget(PhotoWidget(self, "./Screenshot.png"))
+        flow_layout.addWidget(PhotoWidget(self, "./Screenshot.png"))
+        flow_layout.addWidget(PhotoWidget(self, "./chi.png"))
+        self.photos.setLayout(flow_layout)
+        self.addWidget(self.photos)
         
         self.show()
         
