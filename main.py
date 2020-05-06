@@ -1,5 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox
+from photowidget import PhotoWidget
 
 """ TODO:
 mainwindow
@@ -18,6 +19,8 @@ class MainWindow(QWidget):
     
     def initUI(self):
         self.setWindowTitle("Photo tagger")
+        
+        self.test = PhotoWidget(self, "./chi.png")
         
         self.show()
         
