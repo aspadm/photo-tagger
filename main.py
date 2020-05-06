@@ -24,13 +24,16 @@ class MainWindow(QSplitter):
         self.listview = QListView(self)
         self.addWidget(self.listview)
         
-        self.photos = QScrollArea()
+        self.photos_container = QScrollArea()
+        self.photos = QWidget()
         flow_layout = FlowLayout()
         flow_layout.addWidget(PhotoWidget(self, "./Screenshot.png"))
         flow_layout.addWidget(PhotoWidget(self, "./Screenshot.png"))
         flow_layout.addWidget(PhotoWidget(self, "./chi.png"))
         self.photos.setLayout(flow_layout)
-        self.addWidget(self.photos)
+        self.photos_container.setWidget(self.photos)
+        self.photos_container.setWidgetResizable(True)
+        self.addWidget(self.photos_container)
         
         self.show()
         
