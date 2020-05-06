@@ -1,11 +1,11 @@
-name: CICD
+name: Python application
 
 on: [push]
 
 jobs:
   build:
 
-    runs-on: windows
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -29,7 +29,6 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pip install pytest
         pytest
     - name: Push
       if: job.status == 'success'
