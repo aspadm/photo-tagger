@@ -1,4 +1,5 @@
 import sys
+import os.path
 from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox, QSplitter, QListView, QScrollArea, QVBoxLayout, QCheckBox, QPushButton, QLabel
 from photowidget import PhotoWidget
 from flowlayout import FlowLayout
@@ -137,7 +138,8 @@ class MainWindow(QSplitter):
 class TagsPicker(QWidget):
     def __init__(self, parent, filename):
         super().__init__(parent)
-        self.setWindowTitle(filename)
+
+        self.filename = filename
         
         self.tags_container = QScrollArea()
         self.tags = QWidget()
@@ -154,7 +156,7 @@ class TagsPicker(QWidget):
         self.save.clicked.connect(self.saveTags)
         self.cancel = QPushButton("Cancel", self)
         self.cancel.clicked.connect(self.closePanel)
-        self.tags_side_layout.addWidget(QLabel(filename))
+        self.tags_side_layout.addWidget(QLabel(os.path.split(filename)[-1]))
         self.tags_side_layout.addWidget(self.select_all)
         self.tags_side_layout.addWidget(self.deselect_all)
         self.tags_side_layout.addWidget(self.tags_container)
