@@ -5,6 +5,10 @@ Welcome to Photo tagger documentation!
    :maxdepth: 2
    :caption: Contents:
 
+.. automodule:: analyzer
+  :members:
+  :show-inheritance:
+
 .. automodule:: main
   :members:
   :show-inheritance:

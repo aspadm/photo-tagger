@@ -18,8 +18,8 @@ sys.path.insert(0, os.path.abspath('../'))
 # -- Project information -----------------------------------------------------
 
 project = 'Photo tagger'
-copyright = '2020, CATANISM team'
-author = 'CATANISM team'
+copyright = '2020, Алексеевский Р.А., Кириллов А.В., Шибанова Д.А.'
+author = 'Алексеевский Р.А., Кириллов А.В., Шибанова Д.А.'
 
 # The full version, including alpha/beta/rc tags
 release = '1'
