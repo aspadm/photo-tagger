@@ -18,7 +18,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pytest Keras==2.3.1 opencv-python==4.2.0.32 tensorflo==1.13.1 imageai==2.1.5
+        pip install flake8 pytest Keras==2.3.1 opencv-python==4.2.0.32 tensorflow==1.13.1 imageai==2.1.5
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Lint with flake8
       run: |
