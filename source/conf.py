@@ -13,14 +13,14 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../'))
-##sys.path.insert(0, "C:/Users/Daria/Desktop/8 семестр/Технология командной разработки ПО/photo-tagger")
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'DB_docs'
-copyright = '2020, Шибанова Д.А., ИУ7-82Б'
-author = 'Шибанова Д.А., ИУ7-82Б'
+project = 'Photo tagger'
+copyright = '2020, Алексеевский Р.А., Кириллов А.В., Шибанова Д.А.'
+author = 'Алексеевский Р.А., Кириллов А.В., Шибанова Д.А.'
+
 
 # The full version, including alpha/beta/rc tags
 release = '1'

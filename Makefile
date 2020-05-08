@@ -4,11 +4,9 @@
 # You can set these variables from the command line, and also
 # from the environment for the first two.
 SPHINXOPTS    ?=
-ifeq ($(OS),Windows_NT)
-	SPHINXBUILD   ?= python -m sphinx
-else
-	SPHINXBUILD   ?= python3 -m sphinx
-endif
+
+SPHINXBUILD   ?= python -m sphinx
+
 SOURCEDIR     = source
 BUILDDIR      = build
 
