@@ -14,61 +14,73 @@
 """
 
 import os
-import uuid
+import os.path
 from imageai.Detection import ObjectDetection
-from pathlib import Path
 
-#обработка фотки
-def photos(title):
+class TagsDetector:
     """
-    Обрабатывает фотографию, определяет её содержимое.
+    Определитель тегов по файлу изображения.
 
-    :param title: путь к файлу
-    :type title: path
-    :rtype: json
+    :param model: путь до модели нейросети
+    :type model: str
     """
-    
-    list = detector.detectObjectsFromImage(
-            input_image=os.path.join(exec_path, title),
-            output_image_path=os.path.join(exec_path, "./test/new_objects.jpg"),
-            minimum_percentage_probability=50
-    )
-    tags = '{'
-    for eachObject in list:
-            if eachObject["name"] not in tags: 
-                tags += '"name":"' + eachObject["name"] + '",'
-    tags = tags[:-1]
-    tags += '}'
-    #print(tags, "\n", title)
+    def __init__(self, model=None):
+        if model is None:
+            exec_path = os.getcwd()
+            model = os.path.join(exec_path, "resnet50_coco_best_v2.0.1.h5")
 
-#поиск фоток
-def enumerate_files(dir_path: Path, ext: str):
-    """
-    Производит поиск фотографий внутри директории для дальнейшей обработки.
+        self.detector = ObjectDetection()
+        self.detector.setModelTypeAsRetinaNet()
+        self.detector.setModelPath(model)
+        self.detector.loadModel()
 
-    :param dir_path: путь до директории, в которой хранятся снимки
-    :param ext: расширение файлов
-    :type dir_path: path
-    :type ext: str
-    :rtype: json
-    """
-    
-    # формируем маску для поиска
-    path_mask = '*.%s' % ext
-    # исключаем директории
-    only_files = [
-        f for f in dir_path.glob(path_mask)
-        if f.is_file()
-    ]
-    for f_path in only_files:
-        photos(f_path)
+    def getImageTags(self, filepath: str) -> list:
+        """
+        Обрабатывает фотографию, определяет её содержимое.
 
-#создание модели
-exec_path = os.getcwd()
-detector = ObjectDetection()
-detector.setModelTypeAsRetinaNet()
-detector.setModelPath(os.path.join(exec_path, "resnet50_coco_best_v2.0.1.h5"))
-detector.loadModel()
+        :param filepath: путь к файлу
+        :type filepath: str
+        :rtype: list
+        """
 
-parent_dir = Path(exec_path)
-enumerate_files(parent_dir, 'jpg')
+        _, raw = self.detector.detectObjectsFromImage(
+                input_image=filepath,
+                output_type="array",
+                minimum_percentage_probability=50)
+
+        tags = []
+        for tag in raw:
+            if tag["name"] not in tags: 
+                tags.append(tag["name"])
+
+        return sorted(tags)
+
+    def getNewFiles(self, dir_path: str, excluded: list, ext: list) -> dict:
+        """
+        Производит поиск фотографий внутри директории и присваивает им теги.
+
+        :param dir_path: путь до директории, в которой хранятся снимки
+        :param excluded: имена файлов, которые не нужно обрабатывать
+        :param ext: расширения изображений для обработки
+        :type dir_path: str
+        :type excluded: list
+        :type ext: list
+        :rtype: dict
+        """
+
+        res = {}
+
+        for fname in os.listdir(dir_path):
+            fpath = os.path.join(dir_path, fname)
+            if os.path.isfile(fpath) and \
+               os.path.splitext(fpath)[-1].lower() in ext and \
+               fname not in excluded:
+                res.update({fpath: self.getImageTags(fpath)})
+
+        return res
+
+if __name__ == "__main__":
+    detector = TagsDetector()
+    print(detector.getImageTags("test.jpg"))
+    print(detector.getImageTags("test2.jpg"))
+    print(detector.getNewFiles(".", [], [".jpg", ".png"]))
