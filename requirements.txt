@@ -1,5 +1,5 @@
 Keras==2.3.1
 opencv-python==4.2.0.32
-tensorflo==1.13.1
+tensorflow==1.13.1
 imageai==2.1.5
 pytest
