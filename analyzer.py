@@ -74,7 +74,7 @@ class TagsDetector:
             fpath = os.path.join(dir_path, fname)
             if os.path.isfile(fpath) and \
                os.path.splitext(fpath)[-1].lower() in ext and \
-               fname not in excluded:
+               fpath not in excluded:
                 res.update({fpath: self.getImageTags(fpath)})
 
         return res

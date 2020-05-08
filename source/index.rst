@@ -10,6 +10,10 @@ Welcome to Photo tagger documentation!
   :members:
   :show-inheritance:
 
+.. automodule:: db
+  :members:
+  :show-inheritance:
+
 .. automodule:: main
   :members:
   :show-inheritance:
