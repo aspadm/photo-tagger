@@ -233,8 +233,7 @@ class TagsPicker(QWidget):
         self.tags_side_layout.addWidget(self.cancel)
         self.setLayout(self.tags_side_layout)
 
-        # TODO: получить теги файла из БД
-        tags_list = []
+        tags_list = self.parent().db.getImage(filename)
 
         self.tags_checkboxes = [QCheckBox(tag, self.tags) for tag in tag_classes]
 
@@ -270,8 +269,7 @@ class TagsPicker(QWidget):
             QMessageBox.warning(self, "No tags assigned",
                 "No tags assigned at all!\nChanges will not saved")
         else:
-            # TODO: сохранить новые теги
-            pass
+            self.parent().db.updateImage(self.filename, tags)
 
         self.closePanel()
 
@@ -280,6 +278,7 @@ class TagsPicker(QWidget):
         Закрытие редактора тегов.
         """
         self.deleteLater()
+        self.parent().updateImages()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
