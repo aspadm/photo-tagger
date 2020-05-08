@@ -16,146 +16,154 @@
 import sqlite3
 import json
 
-conn = sqlite3.connect("photo-tagger.db")
-##conn = sqlite3.connect(:memory:) # сохранение в RAM
-cursor = conn.cursor()
-
-# Создание таблицы
-def create_table(cursor):
+class LocalBase:
     """
-    Создаёт таблицу в базе данных sqlite3 с тремя столбцами.
-
-    :param cursor: курсор
-    :type pic_id: integer primary key
-    :type tags: json
-    :type pic_link: text
-    :rtype: None
-    
+    Работа с локальной БД SQLite3.
     """
-    
-    cursor.execute("""
-    CREATE TABLE pictures
-    (pic_id INTEGER PRIMARY KEY, tags json, pic_link TEXT)
-    """)
+    def __init__(self, path=None):
+        if path is None:
+            path = "photo-tagger.db"
 
-#Удаление таблицы
-def delete_table(cursor):
-    """
-    Удаляет таблицу со снимками.
+        self.conn = sqlite3.connect(path)
+        self.cursor = self.conn.cursor()
 
-    :param cursor: курсор
-    :rtype: None
-    
-    """
-    
-    cursor.execute("""
-    DROP TABLE pictures
-    """)
+        self.cursor.execute("""SELECT count(name) FROM sqlite_master
+            WHERE type='table' AND name='pictures'""")
 
-##test = json.dumps({'car':'f', 'cat':'t'})
+        if self.cursor.fetchone()[0] != 1:
+            self.createTable()
 
-## Добавление данных в БД
-def insert_data(conn, cursor, pic_id, pic_tags, pic_link):
-    """
-    Добавляет одну строку данных в БД.
+    def __del__(self):
+        self.conn.close()
 
-    :param conn: соединение
-    :param cursor: курсор
-    :param pic_id: идентификатор снимка
-    :param pic_tags: теги изображения
-    :param pic_link: адрес изображения
-    :type pic_id: integer primaty key (int)
-    :type pic_tags: json
-    :type pic_link: text (str)
-    :rtype: None
-    
-    """
-    
-    cursor.execute("""
-    INSERT INTO pictures
-    VALUES (""" + pic_id + """, '[""" + pic_tags + """]', '""" + pic_link + \
-    """')""")
-    conn.commit()
+    def createTable(self) -> None:
+        """
+        Создаёт таблицу в базе данных sqlite3 с двумя столбцами.
 
-# Добавление множества данных в БД одновременно через метод "?"
-def many_insert_data(conn, cursor, id_list, tag_list, link_list):
-    """
-    Добавляет одновременно более одной строки данных в БД через метод "?"
+        :type pic_id: text primary key
+        :type tags: json
+        """
+        self.cursor.execute("""CREATE TABLE pictures
+            (pic_id TEXT PRIMARY KEY, tags json)""")
 
-    :param conn: соединение
-    :param cursor: курсор
-    :param id_list: список идентификаторов
-    :param tag_list: список тегов
-    :param link_list: список ссылок на снимок
-    :type id_list: массив integer'ов
-    :type tag_list: массив json
-    :type link_list: массив строк
-    :rtype: None
-    
-    """
-    
-    len_id = len(id_list)
-    if len_id == len(tag_list) and len_id == len(link_list):
-        for i in range(len_id-1):
-            pass
-##        cursor.executemany("INSERT INTO pictures VALUES (?, ?, ?)", pictures)
-##        conn.commit()
-        ##pictures = [('1', '{car:}', ''),
-        ##            ('2', '', ''),
-        ##            ('3', '', ''),
-        ##            ('4', '', '')]
-        ##cursor.executemany("INSERT INTO pictures VALUES (?, ?, ?)", pictures)
+    def deleteTable(self) -> None:
+        """
+        Удаляет таблицу со снимками.
+        """
+        self.cursor.execute("DROP TABLE pictures")
 
-# Вывод всего содержимого БД
-def select_all(cursor):
-    """
-    Выводит все строки БД.
+    def getFilenames(self) -> list:
+        """
+        Возвращает все имеющиеся в базе имена файлов.
 
-    :param cursor: курсор
-    :rtype: None
-    """
-    
-    cursor.execute("SELECT * FROM pictures")
-    rows = cursor.fetchall()
-    for row in rows:
-        print(row)
+        :rtype: list
+        """
+        self.cursor.execute("SELECT pic_id FROM pictures")
+        rows = self.cursor.fetchall()
 
-# Вывод содержимого, которое соотвествует заданному параметру
-def select_by_param():
-    """
-    Выводит все строки, соответствующие заданному параметру.
+        return [row[0] for row in rows]
 
-    
-    """
-    
-    pass
+    def addImage(self, pic_id: str, pic_tags: list) -> None:
+        """
+        Добавляет одно изображение в БД.
 
-# Обновление БД
-def update_table():
-    """
-    Обновляет БД.
-    
-    """
-    
-    pass
-##upd_sql = """
-##UPDATE pictures
-##SET  = ''
-##WHERE = ''
-##"""
-##cursor.execute(upd_sql)
+        :param pic_id: идентификатор снимка
+        :param pic_tags: теги изображения
+        :type pic_id: str
+        :type pic_tags: list
+        """
+        self.cursor.execute("""INSERT INTO pictures
+            VALUES ('{}', '{}')""".format(pic_id, json.dumps(pic_tags)))
+        self.conn.commit()
 
-# Удаление из БД
-def delete_from_table():
-    """
-    Удаляет заданную строку из БД.
-    """
-    
-    pass
-##del_sql = "DELETE FROM pictures WHERE = ''"
-##cursor.execute(del_sql)
+    def addImages(self, images: dict) -> None:
+        """
+        Добавляет несколько изображений в БД.
 
-conn.close()
+        :param images: пары изображение:теги
+        :type images: dict
+        """
+        for image_name, image_tags in images.items():
+            self.addImage(image_name, image_tags)
+
+    def getImages(self) -> dict:
+        """
+        Возвращает все изображения из БД.
+
+        :rtype: dict
+        """
+        self.cursor.execute("SELECT * FROM pictures")
+        rows = self.cursor.fetchall()
+
+        return {row[0]:json.loads(row[1]) for row in rows}
+
+    def getImage(self, pic_id: str) -> list:
+        """
+        Возвращает теги изображения из БД.
+
+        :param pic_id: идентификатор снимка
+        :type pic_id: str
+        :rtype: list
+        """
+        self.cursor.execute("""SELECT tags FROM pictures
+            WHERE pic_id = '{}'""".format(pic_id))
+        rows = self.cursor.fetchall()
+
+        return json.loads(rows[0][0]) if len(rows) else None
+
+    def getFilenamesByTags(self, tags: list) -> list:
+        """
+        Выводит все изображения, соответствующие заданным тегам.
+
+        :param tags: список тегов
+        :type tags: list
+        """
+        res = []
+
+        images = self.getImages()
+        for image_name, image_tags in images.items():
+            for img_tag in image_tags:
+                if img_tag in tags:
+                    res.append(image_name)
+                    continue
+
+        return res
+
+    def updateImage(self, pic_id: str, pic_tags: list) -> None:
+        """
+        Обновляет одно изображение в БД.
+
+        :param pic_id: идентификатор снимка
+        :param pic_tags: теги изображения
+        :type pic_id: str
+        :type pic_tags: json
+        """
+        self.cursor.execute("""UPDATE pictures SET tags = '{}'
+            WHERE pic_id = '{}'""".format(json.dumps(pic_tags), pic_id))
+        self.conn.commit()
+
+    def deleteImage(self, pic_id: str) -> None:
+        """
+        Удаляет заданное изображение из БД.
+
+        :param pic_id: идентификатор снимка
+        :type pic_id: str
+        """
+        self.cursor.execute("""DELETE FROM pictures
+            WHERE pic_id = '{}'""".format(pic_id))
+        self.conn.commit()
 
 if __name__ == "__main__":
-    pass
+    base = LocalBase()
+    base.addImage("test", ["cat", "trolley"])
+    base.addImage("test2", ["human"])
+    print(base.getFilenames())
+    print(base.getImages())
+    print(base.getImage("test"))
+    print(base.getImage("test0"))
+    print(base.getFilenamesByTags(["cat", "horse"]))
+    base.updateImage("test2", ["horse", "pig"])
+    print(base.getImages())
+    base.deleteImage("test2")
+    print(base.getFilenames())
+    base.deleteTable()
