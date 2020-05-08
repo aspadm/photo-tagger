@@ -1,3 +1,4 @@
+
 Welcome to Photo tagger documentation!
 ======================================
 
