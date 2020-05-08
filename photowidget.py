@@ -66,7 +66,7 @@ class PhotoWidget(QFrame):
         Копирование пути до изображения в буфер обмена.
         """
         clipboard = QApplication.clipboard()
-        clipboard.setText(self.filename)
+        clipboard.setText(os.path.abspath(self.filename))
         QApplication.sendEvent(clipboard, QEvent(QEvent.Clipboard))
 
     def editTags(self) -> None:
