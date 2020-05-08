@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.abspath('../'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'photo-tagger_docs'
+project = 'Photo tagger'
 copyright = '2020, Алексеевский Р.А., Кириллов А.В., Шибанова Д.А.'
 author = 'Алексеевский Р.А., Кириллов А.В., Шибанова Д.А.'
 
