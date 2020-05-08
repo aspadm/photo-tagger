@@ -1,6 +1,13 @@
+"""
+@author: Кириллов А.В., ИУ7-82Б
+
+Основной файл приложения, реализация главного окна.
+"""
+
 import sys
 import os.path
 from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox, QSplitter, QListView, QScrollArea, QVBoxLayout, QCheckBox, QPushButton, QLabel
+from PyQt5.QtGui import QCloseEvent
 from photowidget import PhotoWidget
 from flowlayout import FlowLayout
 
@@ -22,12 +29,20 @@ tag_classes = [
     ]
 
 class MainWindow(QSplitter):
+    """
+    Основное окно приложения из списка тегов, поля с картинками и
+    редактора тегов.
+    """
+
     def __init__(self):
         super().__init__()
         
         self.initUI()
     
-    def initUI(self):
+    def initUI(self) -> None:
+        """
+        Инициализация окна приложения
+        """
         self.setWindowTitle("Photo tagger")
         self.resize(862, 600)
         
@@ -70,7 +85,10 @@ class MainWindow(QSplitter):
         self.setSizes([200, 662])
         self.show()
         
-    def closeEvent(self, event):
+    def closeEvent(self, event: QCloseEvent) -> None:
+        """
+        Вывод диалога при выходе.
+        """
         reply = QMessageBox.question(self, "Exit",
             "Are you sure to quit?",
             QMessageBox.Yes | QMessageBox.No,
@@ -81,30 +99,50 @@ class MainWindow(QSplitter):
         else:
             event.ignore()
     
-    def clearImages(self):
+    def clearImages(self) -> None:
+        """
+        Очистка области просмотра от изображений.
+        """
         self.flow_layout.__del__()
     
-    def addImages(self, images):
+    def addImages(self, images: list) -> None:
+        """
+        Добавление изображений в область просмотра.
+
+        :param images: список путей до изображений
+        :type images: list
+        """
         for img_path in images:
             img = PhotoWidget(self, img_path)
             img.change_tags.connect(self.updateTags)
             self.flow_layout.addWidget(img)
 
-    def selectAllTags(self):
+    def selectAllTags(self) -> None:
+        """
+        Отметить все теги, как выбранные.
+        """
         for checkbox in self.tags_checkboxes:
             checkbox.setChecked(True)
 
         self.updateImages()
     
-    def deselectAllTags(self):
+    def deselectAllTags(self) -> None:
+        """
+        Отметить все теги, как не выбранные.
+        """
         for checkbox in self.tags_checkboxes:
             checkbox.setChecked(False)
 
         self.updateImages()
     
-    def getTags(self):
+    def getTags(self) -> list:
+        """
+        Получить список тегов для поиска изображений.
+
+        :rtype: list
+        """
         tags = []
-        
+
         for checkbox, tag in zip(self.tags_checkboxes, tag_classes):
             if checkbox.isChecked():
                 tags.append(tag)
@@ -114,14 +152,20 @@ class MainWindow(QSplitter):
         
         return tags
     
-    def updateDatabase(self):
+    def updateDatabase(self) -> None:
+        """
+        Обновление содержимого БД при запуске приложения.
+        """
         # TODO: создание БД при её отсутствии
         
         # TODO: сканирование папки на изменения, обновление БД
         
         pass
     
-    def updateImages(self):
+    def updateImages(self) -> None:
+        """
+        Вывод изображений, соответствующих выбранным тегам.
+        """
         tags = self.getTags()
         # TODO: получение изображений из БД
         #images = 
@@ -130,17 +174,31 @@ class MainWindow(QSplitter):
         self.clearImages()
         self.addImages(images)
     
-    def updateTags(self, name):
-        print(name)
+    def updateTags(self, name: str) -> None:
+        """
+        Отображение редактора тегов для изображения.
+
+        :param name: путь до изображения
+        :type name: str
+        """
         picker = TagsPicker(self, name)
         picker.show()
 
 class TagsPicker(QWidget):
-    def __init__(self, parent, filename):
+    """
+    Редактор тегов для изображения.
+
+    :param parent: родительский виджет
+    :type parent: QWidget
+    :param filename: путь до редактируемого изображения
+    :type filename: str
+    """
+
+    def __init__(self, parent: QWidget, filename: str):
         super().__init__(parent)
 
         self.filename = filename
-        
+
         self.tags_container = QScrollArea()
         self.tags = QWidget()
         self.tags_layout = QVBoxLayout()
@@ -168,36 +226,48 @@ class TagsPicker(QWidget):
         tags_list = []
 
         self.tags_checkboxes = [QCheckBox(tag, self.tags) for tag in tag_classes]
-        
+
         for tag_checkbox, tag in zip(self.tags_checkboxes, tag_classes):
             tag_checkbox.setChecked(tag in tags_list)
             self.tags_layout.addWidget(tag_checkbox)
-    
-    def selectAllTags(self):
+
+    def selectAllTags(self) -> None:
+        """
+        Отметить все теги, как выбранные.
+        """
         for checkbox in self.tags_checkboxes:
             checkbox.setChecked(True)
-    
-    def deselectAllTags(self):
+
+    def deselectAllTags(self) -> None:
+        """
+        Отметить все теги, как не выбранные.
+        """
         for checkbox in self.tags_checkboxes:
             checkbox.setChecked(False)
-    
-    def saveTags(self):
+
+    def saveTags(self) -> None:
+        """
+        Сохранение новых тегов изображения в БД.
+        """
         tags = []
-        
+
         for checkbox, tag in zip(self.tags_checkboxes, tag_classes):
             if checkbox.isChecked():
                 tags.append(tag)
-        
+
         if len(tags) == 0:
             QMessageBox.warning(self, "No tags assigned",
                 "No tags assigned at all!\nChanges will not saved")
         else:
             # TODO: сохранить новые теги
             pass
-    
+
         self.closePanel()
-    
-    def closePanel(self):
+
+    def closePanel(self) -> None:
+        """
+        Закрытие редактора тегов.
+        """
         self.deleteLater()
 
 if __name__ == "__main__":
