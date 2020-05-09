@@ -10,6 +10,8 @@ from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox, QSplitter, QList
 from PyQt5.QtGui import QCloseEvent
 from photowidget import PhotoWidget
 from flowlayout import FlowLayout
+from analyzer import TagsDetector
+from db import LocalBase
 
 tag_classes = [
     "airplane", "apple", "backpack", "banana", "baseball bat",
@@ -79,6 +81,9 @@ class MainWindow(QSplitter):
             tag_checkbox.clicked.connect(self.updateImages)
             self.tags_layout.addWidget(tag_checkbox)
         
+        self.db = LocalBase()
+        self.detector = TagsDetector()
+
         self.updateDatabase()
         self.updateImages()
         
@@ -103,7 +108,10 @@ class MainWindow(QSplitter):
         """
         Очистка области просмотра от изображений.
         """
-        self.flow_layout.__del__()
+        for i in range(self.flow_layout.count()):
+            tmp = self.flow_layout.itemAt(0)
+            tmp.widget().setParent(None)
+            tmp = None
     
     def addImages(self, images: list) -> None:
         """
@@ -156,20 +164,23 @@ class MainWindow(QSplitter):
         """
         Обновление содержимого БД при запуске приложения.
         """
-        # TODO: создание БД при её отсутствии
-        
-        # TODO: сканирование папки на изменения, обновление БД
-        
-        pass
+        names = self.db.getFilenames()
+
+        # Удаление устаревших записей
+        for name in names:
+            if not os.path.isfile(name):
+                self.db.deleteImage(name)
+
+        # Сканирование новых изображений
+        images = self.detector.getNewFiles(".", names, [".jpg", ".png"])
+        self.db.addImages(images)
     
     def updateImages(self) -> None:
         """
         Вывод изображений, соответствующих выбранным тегам.
         """
         tags = self.getTags()
-        # TODO: получение изображений из БД
-        #images = 
-        images = []
+        images = self.db.getFilenamesByTags(tags)
         
         self.clearImages()
         self.addImages(images)
@@ -222,8 +233,7 @@ class TagsPicker(QWidget):
         self.tags_side_layout.addWidget(self.cancel)
         self.setLayout(self.tags_side_layout)
 
-        # TODO: получить теги файла из БД
-        tags_list = []
+        tags_list = self.parent().db.getImage(filename)
 
         self.tags_checkboxes = [QCheckBox(tag, self.tags) for tag in tag_classes]
 
@@ -259,8 +269,7 @@ class TagsPicker(QWidget):
             QMessageBox.warning(self, "No tags assigned",
                 "No tags assigned at all!\nChanges will not saved")
         else:
-            # TODO: сохранить новые теги
-            pass
+            self.parent().db.updateImage(self.filename, tags)
 
         self.closePanel()
 
@@ -269,6 +278,7 @@ class TagsPicker(QWidget):
         Закрытие редактора тегов.
         """
         self.deleteLater()
+        self.parent().updateImages()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

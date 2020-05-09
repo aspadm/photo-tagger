@@ -125,7 +125,7 @@ class LocalBase:
             for img_tag in image_tags:
                 if img_tag in tags:
                     res.append(image_name)
-                    continue
+                    break
 
         return res
 
