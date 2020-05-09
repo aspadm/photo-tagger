@@ -2,4 +2,4 @@ Keras==2.3.1
 opencv-python==4.2.0.32
 tensorflow==1.13.1
 imageai==2.1.5
-pytest
+https://github.com/OlafenwaMoses/ImageAI/releases/download/1.0/resnet50_coco_best_v2.0.1.h5
